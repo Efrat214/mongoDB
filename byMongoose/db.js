@@ -11,25 +11,50 @@ import authors from "./models/authors.model.js";
     });
     console.log("Connected successfully");
 
-    const books1 = await books
-      .find({
-        numPages: { $gt: 200 },
-        publishDate: {
-          $gte: new Date(2015, 0, 1),
-          $lt: new Date(2020, 0, 1),
+    const books1 = await books.aggregate([
+      {
+        $match: {
+          numPages: { $gt: 200 },
+          publishDate: {
+            $gte: new Date(2015, 0, 1),
+            $lt: new Date(2020, 0, 1),
+          },
         },
-      })
-      .select("bookName -_id")
-      .populate({
-        path: "authorId",
-        match: { firstName: /^P/ },
-        select: "firstName lastName -_id",
-        options: { sort: [{ firstName: "asc", lastName: "asc" }] },
-      })
-      .sort({
-        numPages: 1,
-      })
-      .exec();
+      },
+      {
+        $lookup: {
+          from: "authors",
+          localField: "authorId",
+          foreignField: "_id",
+          as: "author",
+        },
+      },
+      {
+        $unwind: "$author",
+      },
+      {
+        $match: {
+          "author.firstName": /^P/,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          bookName: 1,
+          author: {
+            firstName: 1,
+            lastName: 1,
+          },
+        },
+      },
+      {
+        $sort: {
+          "author.firstName": 1,
+          "author.lastName": 1,
+          numPages: 1,
+        },
+      },
+    ]);
 
     console.log("Books matching the combined criteria:");
     console.log(books1);
