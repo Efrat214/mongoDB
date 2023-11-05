@@ -4,7 +4,8 @@ import authors from "./models/authors.model.js";
 
 (async function connectDB() {
   try {
-    await mongoose.connect("mongodb://localhost:27017/Library", {
+    const connectionString = "mongodb://localhost:27017/Library";
+    await mongoose.connect(connectionString, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

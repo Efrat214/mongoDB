@@ -51,12 +51,7 @@ async function getNumPagesMoreThen250(db) {
     .toArray();
   console.log(filteredDocs);
 }
-
-async function main() {
-  await client.connect();
-  console.log("Connected successfully to the server");
-  const db = client.db(dbName);
-
+async function initData() {
   const Author1Document = {
     firstName: "author1",
     lastName: "author1last",
@@ -94,6 +89,12 @@ async function main() {
     };
     await insertNewBook(db, bookDocument);
   }
+}
+async function main() {
+  await client.connect();
+  console.log("Connected successfully to the server");
+  const db = client.db(dbName);
+  initData();
   await createBooksIndexses(db);
   await getNumPagesMoreThen250(db);
   await findBooksByAuthor(db, Author2Document._id);
